@@ -1,0 +1,36 @@
+# jwt secret
+jwt:
+  secret: mCLeZ5nO1inOQH95jhtnUaoN/yMXswqfoNfmITPa02Q=
+
+# mail system from
+mail:
+  from: xxx@example.com
+
+spring:
+  profiles:
+    active: dev
+  redis:
+    database: 0
+    host: localhost
+    port: 6379
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    # jdbc
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/db_example
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  mail:
+    # mail system
+    host: smtp.example.com
+    port: 587
+    username: xxxx@example.com
+    password: 1234
+    default-encoding: UTF-8
+    properties:
+      mail:
+        stmp:
+          socketFactoryClass: javax.net.ssl.SSLSocketFactory
+        debug: true

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Duplex Learn 验证邮件</title>
+</head>
+<body>
+<div>
+    <h1>
+        Duplex Learn 验证邮件
+    </h1>
+    <hr/>
+
+    <p>
+        感谢您注册 Duplex Learn，为了继续注册，请复制下面的验证码，然后回到您的注册界面粘贴到指定的位置。
+    </p>
+
+    <h3 style="color: red;">
+        <span th:text="${uuid}"></span>
+    </h3>
+
+    <p>
+        如果您没有注册过 Duplex Learn ，甚至您不知道 Duplex Learn ，请忽略该邮件。
+    </p>
+
+
+    <p>
+        感谢您对 Duplex Learn 的支持，
+        <br>
+        Duplex Learn 团队。
+    </p>
+</div>
+</body>
+</html>

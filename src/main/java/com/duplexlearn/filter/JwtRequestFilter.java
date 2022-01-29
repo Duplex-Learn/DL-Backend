@@ -1,7 +1,8 @@
-package com.duplexlearn.config;
+package com.duplexlearn.filter;
 
-import com.duplexlearn.service.JwtUserDetailsService;
+import com.duplexlearn.service.impl.JwtUserDetailsServiceImpl;
 import com.duplexlearn.util.JwtUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,28 +22,22 @@ import java.io.IOException;
 
 
 /**
- * The authentication filter.
- * <p>
- * Identify the authorization field in the HTTP header.
- * Verify the validity of token.
+ * JWT 验证拦截器
+ *
+ * 自动拦截请求，检查请求头中的 AUTHORIZATION ，如果存在 JWT 则检出用户
  *
  * @author LoveLonelyTime
  */
+@Slf4j
 @Component
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtRequestFilter.class);
-
-    private JwtUserDetailsService jwtUserDetailsService;
-    private JwtUtil jwtUtil;
+    private final JwtUserDetailsServiceImpl jwtUserDetailsService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public void setJwtUserDetailsService(JwtUserDetailsService jwtUserDetailsService) {
+    public JwtRequestFilter(JwtUserDetailsServiceImpl jwtUserDetailsService, JwtUtil jwtUtil) {
         this.jwtUserDetailsService = jwtUserDetailsService;
-    }
-
-    @Autowired
-    public void setJwtUtil(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
@@ -50,34 +45,35 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String requestTokenHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
+        // 如果没有 AUTHORIZATION 字段或已经完成验证则调用下一个拦截器
         if (requestTokenHeader == null
                 || SecurityContextHolder.getContext().getAuthentication() != null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-
+        // 检查 Bearer 属性
         if (!requestTokenHeader.startsWith("Bearer ")) {
             log.warn("JWT Token does not begin with Bearer String");
             filterChain.doFilter(request, response);
             return;
         }
 
+        // 提取 JWT
         String token = requestTokenHeader.substring(7);
         String username = jwtUtil.getUsernameFromToken(token);
 
+        // 检出用户
         UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(username);
 
+        // 验证 JWT
         if (jwtUtil.validateToken(token, userDetails)) {
 
+            // 一切合法则设置好验证用户到当前上下文
             UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
                     userDetails, null, userDetails.getAuthorities());
             usernamePasswordAuthenticationToken
                     .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            /*
-            After setting the Authentication in the context, we specify that the current user is authenticated.
-            So it passes the Spring Security Configurations successfully.
-             */
             SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
         }
 

@@ -3,9 +3,8 @@ package com.duplexlearn;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-
 /**
- * The Spring Boot Application.
+ * Spring Boot 启动类
  *
  * @author LoveLonelyTime
  */

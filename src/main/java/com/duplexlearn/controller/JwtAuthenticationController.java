@@ -1,61 +1,62 @@
 package com.duplexlearn.controller;
 
-import com.duplexlearn.model.LoginFormDTO;
-import com.duplexlearn.model.LoginFormVO;
-import com.duplexlearn.model.JwtTokenVO;
+import com.duplexlearn.model.dto.LoginDTO;
+import com.duplexlearn.model.vo.LoginVO;
+import com.duplexlearn.model.vo.JwtTokenVO;
 import com.duplexlearn.service.JwtAuthenticationService;
-import com.duplexlearn.service.JwtUserDetailsService;
+import com.duplexlearn.service.impl.JwtUserDetailsServiceImpl;
 import com.duplexlearn.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 /**
- * The authentication controller.
- * <p>
- * Including user login operations.
+ * 鉴权控制器
+ *
+ * 提供用户登录（鉴权）接口
  *
  * @author LoveLonelyTime
  */
 @RestController
-@RequestMapping("/auth")
 public class JwtAuthenticationController {
 
-    private JwtUserDetailsService jwtUserDetailsService;
-    private JwtAuthenticationService jwtAuthenticationService;
-    private JwtUtil jwtUtil;
+    private final JwtUserDetailsServiceImpl jwtUserDetailsService;
+    private final JwtAuthenticationService jwtAuthenticationService;
+    private final JwtUtil jwtUtil;
 
     @Autowired
-    public void setJwtUserDetailsService(JwtUserDetailsService jwtUserDetailsService) {
+    public JwtAuthenticationController(JwtUserDetailsServiceImpl jwtUserDetailsService, JwtAuthenticationService jwtAuthenticationService, JwtUtil jwtUtil) {
         this.jwtUserDetailsService = jwtUserDetailsService;
-    }
-
-    @Autowired
-    public void setJwtUtil(JwtUtil jwtUtil) {
+        this.jwtAuthenticationService = jwtAuthenticationService;
         this.jwtUtil = jwtUtil;
     }
 
-    @Autowired
-    public void setJwtAuthenticationService(JwtAuthenticationService jwtAuthenticationService) {
-        this.jwtAuthenticationService = jwtAuthenticationService;
-    }
-
     /**
-     * Process user login.
+     * 请求 JWT 令牌资源，处理用户登录
      *
-     * @param loginForm Email and password
-     * @return jwt
+     * @param loginForm 邮箱和密码
+     * @return jwt 返回 JWT 令牌
      */
     @PostMapping("/token")
-    public JwtTokenVO createAuthenticationToken(@RequestBody LoginFormVO loginFormVO) {
-        LoginFormDTO loginFormDTO = new LoginFormDTO();
-        loginFormDTO.setPassword(loginFormVO.getPassword());
-        loginFormDTO.setEmail(loginFormVO.getEmail());
+    public JwtTokenVO createAuthenticationToken(@RequestBody @Valid LoginVO loginForm) {
+        // 构建 DTO 对象
+        LoginDTO loginDTO = new LoginDTO();
+        loginDTO.setPassword(loginForm.getPassword());
+        loginDTO.setEmail(loginForm.getEmail());
 
-        jwtAuthenticationService.authenticate(loginFormDTO);
-        UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(loginFormVO.getEmail());
+        // 验证用户是否合法
+        jwtAuthenticationService.authenticate(loginDTO);
+
+        // 合法则检出用户并生成 JWT
+        UserDetails userDetails = jwtUserDetailsService.loadUserByUsername(loginForm.getEmail());
         String token = jwtUtil.generateToken(userDetails);
-        return new JwtTokenVO(token);
+
+        // 生成 VO 对象
+        JwtTokenVO jwtTokenVO = new JwtTokenVO();
+        jwtTokenVO.setJwt(token);
+        return jwtTokenVO;
     }
 }
 

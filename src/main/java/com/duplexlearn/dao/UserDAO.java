@@ -1,23 +1,23 @@
 package com.duplexlearn.dao;
 
-import com.duplexlearn.model.UserPO;
+import com.duplexlearn.model.po.UserPO;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 /**
- * The user dao.
+ * 用户的数据访问接口类
  *
  * @author LoveLonelyTime
  */
 @Repository
 public interface UserDAO extends JpaRepository<UserPO, Long> {
     /**
-     * Find by email
+     * 通过邮箱寻找一个用户
      *
-     * @param email email
-     * @return user
+     * @param email 用户的邮箱
+     * @return 用户
      */
     Optional<UserPO> findByEmail(String email);
 }

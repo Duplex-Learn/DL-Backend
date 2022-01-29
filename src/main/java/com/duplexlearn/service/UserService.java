@@ -1,28 +1,36 @@
 package com.duplexlearn.service;
 
-import com.duplexlearn.model.*;
+import com.duplexlearn.model.dto.PUserDTO;
+import com.duplexlearn.model.dto.PreRegisterDTO;
+import com.duplexlearn.model.dto.UserDTO;
 
 /**
- * UserService.
- * <p>
- * Provide user logic services.
+ * 用户服务
+ *
+ * 提供用户注册、预注册、登录等服务
  *
  * @author LoveLonelyTime
  */
 public interface UserService {
     /**
-     * Pre registration.
+     * 用户预注册
      *
-     * @param puser puser
-     * @return puser
+     * @param preRegisterDTO 预注册表单数据传输对象
      */
-    PreRegisterDTO preRegister(PreRegisterDTO preRegisterDTO);
+    void preRegister(PreRegisterDTO preRegisterDTO);
 
     /**
-     * Register.
+     * 用户注册
      *
-     * @param puser puser
-     * @return user
+     * @param pUserDTO 预注册用户的数据传输对象
+     * @return 新用户的数据传输对象
      */
      UserDTO register(PUserDTO pUserDTO);
+
+    /**
+     * 获取当前用户
+     *
+     * @return 当前用户的数据传输对象
+     */
+     UserDTO getCurrentUser();
 }

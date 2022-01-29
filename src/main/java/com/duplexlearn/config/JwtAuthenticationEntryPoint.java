@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
- * The authentication entry point.
- * <p>
- * It will return 401 status.
+ * JWT 验证失败的终点
+ *
+ * 默认返回 401
  *
  * @author LoveLonelyTime
  */
@@ -20,7 +20,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
-        // Return HttpServletResponse.SC_UNAUTHORIZED
+        // 返回 401 HttpServletResponse.SC_UNAUTHORIZED
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
     }
 }

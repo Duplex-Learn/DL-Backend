@@ -1,6 +1,6 @@
 package com.duplexlearn.service;
 
-import com.duplexlearn.model.User;
+import com.duplexlearn.model.*;
 
 /**
  * UserService.
@@ -13,17 +13,16 @@ public interface UserService {
     /**
      * Pre registration.
      *
-     * @param email email
+     * @param puser puser
+     * @return puser
      */
-    void preRegister(String email);
+    PreRegisterDTO preRegister(PreRegisterDTO preRegisterDTO);
 
     /**
      * Register.
      *
-     * @param email    email
-     * @param password password
-     * @param uuid     puser's uuid
+     * @param puser puser
      * @return user
      */
-    User register(String email, String password, String uuid);
+     UserDTO register(PUserDTO pUserDTO);
 }

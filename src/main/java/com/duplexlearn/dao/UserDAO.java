@@ -1,8 +1,7 @@
 package com.duplexlearn.dao;
 
-import com.duplexlearn.model.User;
+import com.duplexlearn.model.UserPO;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -13,12 +12,12 @@ import java.util.Optional;
  * @author LoveLonelyTime
  */
 @Repository
-public interface UserDao extends JpaRepository<User, Long> {
+public interface UserDAO extends JpaRepository<UserPO, Long> {
     /**
      * Find by email
      *
      * @param email email
      * @return user
      */
-    Optional<User> findByEmail(String email);
+    Optional<UserPO> findByEmail(String email);
 }

@@ -5,10 +5,10 @@ package com.duplexlearn.model;
  *
  * @author LoveLonelyTime
  */
-public class JwtToken {
+public class JwtTokenVO {
     private String jwt;
 
-    public JwtToken(String jwt) {
+    public JwtTokenVO(String jwt) {
         this.jwt = jwt;
     }
 

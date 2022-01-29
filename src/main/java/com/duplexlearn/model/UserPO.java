@@ -1,15 +1,31 @@
 package com.duplexlearn.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 /**
- * The register request.
+ * The user entity.
  *
  * @author LoveLonelyTime
  */
-public class RegisterForm {
+@Entity
+public class UserPO {
+    @Id
+    @GeneratedValue
+    private Long id;
     private String email;
     private String password;
-    private String uuid;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getEmail() {
         return email;
@@ -25,13 +41,5 @@ public class RegisterForm {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
     }
 }

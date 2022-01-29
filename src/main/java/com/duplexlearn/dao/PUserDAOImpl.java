@@ -1,5 +1,6 @@
 package com.duplexlearn.dao;
 
+import com.duplexlearn.model.PUserPO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -16,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  * @author LoveLonelyTime
  */
 @Repository
-public class PUserDaoImpl implements PUserDao {
+public class PUserDAOImpl implements PUserDAO {
 
     private StringRedisTemplate stringRedisTemplate;
 
@@ -28,15 +29,23 @@ public class PUserDaoImpl implements PUserDao {
     }
 
     @Override
-    public String createPUser(String email) {
+    public PUserPO save(PUserPO pUserPO) {
         String uuid = UUID.randomUUID().toString();
-        stringRedisTemplate.opsForValue().set(email, uuid, PUSER_TIMEOUT, TimeUnit.SECONDS);
-        return uuid;
+        pUserPO.setUuid(uuid);
+        stringRedisTemplate.opsForValue().set(pUserPO.getEmail(), uuid, PUSER_TIMEOUT, TimeUnit.SECONDS);
+        return pUserPO;
     }
 
     @Override
-    public Optional<String> getPUserUUIDByEmail(String email) {
-        String value = stringRedisTemplate.opsForValue().get(email);
-        return Optional.ofNullable(value);
+    public Optional<PUserPO> findByEmail(String email) {
+        String uuid = stringRedisTemplate.opsForValue().get(email);
+        PUserPO pUserPO = null;
+        if(uuid != null)
+        {
+            pUserPO = new PUserPO();
+            pUserPO.setEmail(email);
+            pUserPO.setUuid(uuid);
+        }
+        return Optional.ofNullable(pUserPO);
     }
 }

@@ -1,15 +1,13 @@
 package com.duplexlearn.controller;
 
-import com.duplexlearn.model.PreRegisterForm;
-import com.duplexlearn.model.RegisterForm;
-import com.duplexlearn.model.User;
+import com.duplexlearn.model.*;
 import com.duplexlearn.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 
 /**
  * User center.
@@ -34,23 +32,35 @@ public class UserController {
      * <p>
      * This will create a puser on the server and notify the user.
      *
-     * @param preRegisterForm email
-     * @return email
+     * @param pUser puser
+     * @return puser
      */
     @PostMapping("/puser")
-    public PreRegisterForm preRegister(@RequestBody PreRegisterForm preRegisterForm) {
-        userService.preRegister(preRegisterForm.getEmail());
-        return preRegisterForm;
+    public PreRegisterVO preRegister(@RequestBody @Validated PreRegisterVO preRegisterVO) {
+        PreRegisterDTO preRegisterDTO = new PreRegisterDTO();
+        preRegisterDTO.setEmail(preRegisterVO.getEmail());
+
+        userService.preRegister(preRegisterDTO);
+        return preRegisterVO;
     }
 
     /**
      * Verify puser and register user.
      *
-     * @param registerForm email, password, uuid
+     * @param pUser puser
      * @return user
      */
     @PostMapping("/user")
-    public User register(@RequestBody RegisterForm registerForm) {
-        return userService.register(registerForm.getEmail(), registerForm.getPassword(), registerForm.getUuid());
+    public UserVO register(@RequestBody @Validated PUserVO pUserVO) {
+        PUserDTO pUserDTO = new PUserDTO();
+        pUserDTO.setEmail(pUserVO.getEmail());
+        pUserDTO.setUuid(pUserVO.getUuid());
+        pUserDTO.setPassword(pUserVO.getPassword());
+        UserDTO userDTO = userService.register(pUserDTO);
+
+        UserVO userVO = new UserVO();
+        userVO.setId(userDTO.getId());
+        userVO.setEmail(userDTO.getEmail());
+        return userVO;
     }
 }

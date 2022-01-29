@@ -1,30 +1,9 @@
 package com.duplexlearn.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-
-/**
- * The user entity.
- *
- * @author LoveLonelyTime
- */
-@Entity
-public class User {
-    @Id
-    @GeneratedValue
-    private Long id;
-
+public class PUserDTO {
     private String email;
     private String password;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private String uuid;
 
     public String getEmail() {
         return email;
@@ -40,5 +19,13 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }

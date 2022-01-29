@@ -1,17 +1,16 @@
 package com.duplexlearn.service;
 
-import com.duplexlearn.dao.PUserDao;
-import com.duplexlearn.dao.UserDao;
+import com.duplexlearn.dao.PUserDAO;
+import com.duplexlearn.dao.UserDAO;
 import com.duplexlearn.exception.IllegalPUserException;
 import com.duplexlearn.exception.UserAlreadyExistsException;
-import com.duplexlearn.model.User;
+import com.duplexlearn.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.MimeTypeUtils;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
@@ -29,8 +28,8 @@ import javax.mail.internet.MimeMessage;
  */
 @Service
 public class UserServiceImpl implements UserService {
-    private UserDao userDao;
-    private PUserDao pUserDao;
+    private UserDAO userDAO;
+    private PUserDAO pUserDAO;
     private JavaMailSender javaMailSender;
     private TemplateEngine templateEngine;
     private PasswordEncoder passwordEncoder;
@@ -38,8 +37,8 @@ public class UserServiceImpl implements UserService {
     private String mailFrom;
 
     @Autowired
-    public void setUserDao(UserDao userDao) {
-        this.userDao = userDao;
+    public void setUserDAO(UserDAO userDAO) {
+        this.userDAO = userDAO;
     }
 
     @Autowired
@@ -48,8 +47,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Autowired
-    public void setpUserDao(PUserDao pUserDao) {
-        this.pUserDao = pUserDao;
+    public void setPUserDAO(PUserDAO pUserDAO) {
+        this.pUserDAO = pUserDAO;
     }
 
     @Autowired
@@ -68,17 +67,22 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void preRegister(String email) {
-        if (userDao.findByEmail(email).isPresent())
-            throw new UserAlreadyExistsException(email);
+    public PreRegisterDTO preRegister(PreRegisterDTO preRegisterDTO) {
+        if (userDAO.findByEmail(preRegisterDTO.getEmail()).isPresent())
+            throw new UserAlreadyExistsException(preRegisterDTO.getEmail());
 
-        String uuid = pUserDao.createPUser(email);
+        PUserPO pUserPO = new PUserPO();
+        pUserPO.setEmail(preRegisterDTO.getEmail());
 
-        try {
-            sendActivationEmail(email, uuid);
-        } catch (MessagingException e) {
-            throw new RuntimeException("Mail not sent", e);
-        }
+        pUserPO = pUserDAO.save(pUserPO);
+
+//        try {
+//            sendActivationEmail(pUserPO.getEmail(), pUserPO.getUuid());
+//        } catch (MessagingException e) {
+//            throw new RuntimeException("Mail not sent", e);
+//        }
+
+        return preRegisterDTO;
     }
 
     /**
@@ -99,21 +103,27 @@ public class UserServiceImpl implements UserService {
         // Generate HTML by puser.html
         Context context = new Context();
         context.setVariable("uuid", uuid);
+        context.setVariable("email", email);
         String htmlText = templateEngine.process("puser.html", context);
-        mailMessage.setContent(htmlText, MimeTypeUtils.TEXT_HTML_VALUE);
+        helper.setText(htmlText,true);
 
         javaMailSender.send(mailMessage);
     }
 
     @Override
-    public User register(String email, String password, String uuid) {
-        String uuidIn = pUserDao.getPUserUUIDByEmail(email).orElseThrow(() -> new IllegalPUserException(email));
-        if (uuidIn == null || !uuidIn.equals(uuid)) throw new IllegalPUserException(email);
+    public UserDTO register(PUserDTO pUserDTO) {
+        PUserPO pUserPO = pUserDAO.findByEmail(pUserDTO.getEmail()).orElseThrow(() -> new IllegalPUserException(pUserDTO.getEmail()));
+        if (!pUserPO.getUuid().equals(pUserDTO.getUuid())) throw new IllegalPUserException(pUserDTO.getEmail());
 
-        User user = new User();
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
+        UserPO userPO = new UserPO();
+        userPO.setEmail(pUserDTO.getEmail());
+        userPO.setPassword(passwordEncoder.encode(pUserDTO.getPassword()));
+        userPO = userDAO.save(userPO);
 
-        return userDao.save(user);
+        UserDTO userDTO = new UserDTO();
+        userDTO.setEmail(userPO.getEmail());
+        userDTO.setId(userPO.getId());
+
+        return userDTO;
     }
 }

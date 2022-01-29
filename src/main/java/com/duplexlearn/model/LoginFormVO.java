@@ -1,13 +1,13 @@
 package com.duplexlearn.model;
 
-
 /**
- * The pre register request.
+ * The login request.
  *
  * @author LoveLonelyTime
  */
-public class PreRegisterForm {
+public class LoginFormVO {
     private String email;
+    private String password;
 
     public String getEmail() {
         return email;
@@ -15,5 +15,13 @@ public class PreRegisterForm {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

@@ -1,5 +1,7 @@
 package com.duplexlearn.dao;
 
+import com.duplexlearn.model.PUserPO;
+
 import java.util.Optional;
 
 /**
@@ -7,20 +9,20 @@ import java.util.Optional;
  *
  * @author LoveLonelyTime
  */
-public interface PUserDao {
+public interface PUserDAO {
     /**
      * Create a puser.
      *
-     * @param email User's email
-     * @return PUser's UUID
+     * @param puser puser
+     * @return puser
      */
-    String createPUser(String email);
+    PUserPO save(PUserPO pUser);
 
     /**
      * Get puser uuid.
      *
      * @param email User's email
-     * @return PUser's UUID
+     * @return puser
      */
-    Optional<String> getPUserUUIDByEmail(String email);
+    Optional<PUserPO> findByEmail(String email);
 }

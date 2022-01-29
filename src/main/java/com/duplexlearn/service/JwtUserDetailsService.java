@@ -1,8 +1,11 @@
 package com.duplexlearn.service;
 
-import com.duplexlearn.dao.UserDao;
-import com.duplexlearn.model.User;
+import com.duplexlearn.dao.UserDAO;
+import com.duplexlearn.model.LoginFormDTO;
+import com.duplexlearn.model.UserPO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -21,17 +24,17 @@ import java.util.Collections;
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
 
-    private UserDao userDao;
+    private UserDAO userDAO;
 
     @Autowired
-    public void setUserDao(UserDao userDao) {
-        this.userDao = userDao;
+    public void setUserDAO(UserDAO userDAO) {
+        this.userDAO = userDAO;
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         // Locate the user based on the username
-        User user = userDao.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
+        UserPO user = userDAO.findByEmail(username).orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + username));
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), Collections.emptyList());
     }
 }

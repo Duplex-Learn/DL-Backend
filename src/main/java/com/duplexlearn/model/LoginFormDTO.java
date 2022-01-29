@@ -1,11 +1,6 @@
 package com.duplexlearn.model;
 
-/**
- * The login request.
- *
- * @author LoveLonelyTime
- */
-public class LoginForm {
+public class LoginFormDTO {
     private String email;
     private String password;
 

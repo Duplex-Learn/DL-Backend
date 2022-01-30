@@ -113,10 +113,10 @@ public class UserServiceImpl implements UserService {
         userDTO.setId(userPO.getId());
         userDTO.setNickname(userPO.getNickname());
         userDTO.setAge(userPO.getAge());
-        userDTO.setGender(userDTO.getGender());
+        userDTO.setGender(userPO.getGender());
         userDTO.setHomeUrl(userPO.getHomeUrl());
-        userDTO.setPosition(userDTO.getPosition());
-        userDTO.setOrganization(userDTO.getOrganization());
+        userDTO.setPosition(userPO.getPosition());
+        userDTO.setOrganization(userPO.getOrganization());
         return userDTO;
     }
 
@@ -142,11 +142,33 @@ public class UserServiceImpl implements UserService {
         return createUserDTOFromUserPO(userPO);
     }
 
-    @Override
-    public UserDTO getCurrentUser() {
+    /**
+     * 获取当前已登录用户的 PO 对象
+     * @return PO 对象
+     */
+    private UserPO getCurrentUserPO()
+    {
         // 获取已鉴权的用户
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserPO userPO = userDAO.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + email));
-        return createUserDTOFromUserPO(userPO);
+        return userDAO.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found with username: " + email));
+    }
+
+    @Override
+    public UserDTO getCurrentUser() {
+        return createUserDTOFromUserPO(getCurrentUserPO());
+    }
+
+    @Override
+    public void updateUser(UserDTO userDTO) {
+        UserPO userPO = getCurrentUserPO();
+
+        userPO.setNickname(userDTO.getNickname());
+        userPO.setGender(userDTO.getGender());
+        userPO.setAge(userDTO.getAge());
+        userPO.setHomeUrl(userDTO.getHomeUrl());
+        userPO.setPosition(userDTO.getPosition());
+        userPO.setOrganization(userDTO.getOrganization());
+
+        userDAO.save(userPO);
     }
 }

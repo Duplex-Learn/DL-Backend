@@ -1,6 +1,7 @@
 package com.duplexlearn.model.vo;
 
 import lombok.Data;
+import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -17,5 +18,6 @@ public class PreRegisterVO {
      */
     @NotBlank
     @Email
+    @Length(max = 50)
     private String email;
 }

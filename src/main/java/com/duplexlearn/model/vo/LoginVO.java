@@ -18,11 +18,12 @@ public class LoginVO {
      */
     @Email
     @NotBlank
+    @Length(max = 50)
     private String email;
 
     /**
-     * 用户的密码，至少 6 位
+     * 用户的密码，至少 6 位，最大 18 位
      */
-    @Length(min = 6)
+    @Length(min = 6,max = 18)
     private String password;
 }

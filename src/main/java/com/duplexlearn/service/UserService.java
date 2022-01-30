@@ -33,4 +33,10 @@ public interface UserService {
      * @return 当前用户的数据传输对象
      */
      UserDTO getCurrentUser();
+
+    /**
+     * 更新用户信息
+     * @param userDTO 用户的数据传输对象
+     */
+     void updateUser(UserDTO userDTO);
 }

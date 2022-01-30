@@ -5,6 +5,7 @@ import com.duplexlearn.model.dto.PreRegisterDTO;
 import com.duplexlearn.model.dto.UserDTO;
 import com.duplexlearn.model.vo.PUserVO;
 import com.duplexlearn.model.vo.PreRegisterVO;
+import com.duplexlearn.model.vo.UpdateUserVO;
 import com.duplexlearn.model.vo.UserVO;
 import com.duplexlearn.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,6 +78,27 @@ public class UserController {
 
         // 创建 VO 对象
         return  createUserVOFromUserDTO(userDTO);
+    }
+
+    /**
+     * 更新用户的信息
+     * @return OK
+     */
+    @PutMapping("/user")
+    public ResponseEntity<?> updateUser(@RequestBody @Valid UpdateUserVO updateUserVO)
+    {
+        // 创建 DTO 对象
+        UserDTO userDTO = new UserDTO();
+        userDTO.setNickname(updateUserVO.getNickname());
+        userDTO.setGender(updateUserVO.getGender());
+        userDTO.setAge(updateUserVO.getAge());
+        userDTO.setHomeUrl(updateUserVO.getHomeUrl());
+        userDTO.setPosition(updateUserVO.getPosition());
+        userDTO.setOrganization(updateUserVO.getOrganization());
+
+        userService.updateUser(userDTO);
+        // 返回 OK
+        return ResponseEntity.ok().build();
     }
 
     /**

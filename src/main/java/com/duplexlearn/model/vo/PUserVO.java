@@ -18,18 +18,20 @@ public class PUserVO {
      */
     @NotBlank
     @Email
+    @Length(max = 50)
     private String email;
 
     /**
      * 用户的密码
      */
     @NotBlank
-    @Length(min = 6)
+    @Length(min = 6,max = 18)
     private String password;
 
     /**
      * 要验证用户的 UUID
      */
     @NotBlank
+    @Length(max = 50)
     private String uuid;
 }

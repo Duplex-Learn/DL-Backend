@@ -1,4 +1,4 @@
-package com.duplexlearn.config;
+package com.duplexlearn.controller;
 
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 

@@ -1,5 +1,6 @@
 package com.duplexlearn.config;
 
+import com.duplexlearn.controller.JwtAuthenticationEntryPoint;
 import com.duplexlearn.filter.JwtRequestFilter;
 import com.duplexlearn.service.impl.JwtUserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,11 +8,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -26,14 +27,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtUserDetailsServiceImpl jwtUserDetailsService;
     private final JwtRequestFilter jwtRequestFilter;
-    private final PasswordEncoder passwordEncoder;
+    private static final PasswordEncoder PASSWORD_ENCODER = new BCryptPasswordEncoder();
 
     @Autowired
-    public WebSecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtUserDetailsServiceImpl jwtUserDetailsService, JwtRequestFilter jwtRequestFilter, PasswordEncoder passwordEncoder) {
+    public WebSecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtUserDetailsServiceImpl jwtUserDetailsService, JwtRequestFilter jwtRequestFilter) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtUserDetailsService = jwtUserDetailsService;
         this.jwtRequestFilter = jwtRequestFilter;
-        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -47,11 +47,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
+    /**
+     * 暴露密码加密器
+     * @return 密码加密器
+     */
+    @Bean
+    public PasswordEncoder passwordEncoder()
+    {
+        return PASSWORD_ENCODER;
+    }
+
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         // 设置用户服务和密码加密器
         auth.userDetailsService(jwtUserDetailsService)
-                .passwordEncoder(passwordEncoder);
+                .passwordEncoder(PASSWORD_ENCODER);
     }
 
     @Override
@@ -66,6 +76,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http = http.authorizeHttpRequests()
                 .antMatchers("/token").permitAll() // 鉴权请求全部允许
                 .antMatchers("/puser").permitAll() // 预注册允许
+                .antMatchers(HttpMethod.GET,"/project/**").permitAll()
+                .antMatchers(HttpMethod.GET,"/projects/**").permitAll()
                 .antMatchers(HttpMethod.POST, "/user").permitAll() // 注册允许
                 .anyRequest().authenticated() // 其他请求一律需要登录
                 .and();

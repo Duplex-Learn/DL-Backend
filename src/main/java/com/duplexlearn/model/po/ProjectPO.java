@@ -11,10 +11,12 @@ public class ProjectPO {
     @GeneratedValue
     private Long id;
 
-    // TODO @Column(unique = true)
+    @Column(unique = true)
     private String url;
+
+    @Column(unique = true)
+    private String slug;
 
     @ManyToOne
     private UserPO userPO;
-
 }

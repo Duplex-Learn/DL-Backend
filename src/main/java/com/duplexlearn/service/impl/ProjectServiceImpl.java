@@ -9,17 +9,22 @@ import com.duplexlearn.model.dto.UserDTO;
 import com.duplexlearn.model.po.ProjectPO;
 import com.duplexlearn.model.po.UserPO;
 import com.duplexlearn.model.vo.ProjectMetaVO;
+import com.duplexlearn.model.vo.ProjectVO;
 import com.duplexlearn.service.ProjectService;
 import com.duplexlearn.service.UserService;
+import com.duplexlearn.util.RSAUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URL;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -29,27 +34,39 @@ public class ProjectServiceImpl implements ProjectService {
     private RestTemplate restTemplate;
     private ProjectDAO projectDAO;
     private UserService userService;
+    private RSAUtil rsaUtil;
+
+    private PublicKey publicKey;
+
+    @Value("${dl.secret}")
+    public void setPrivateKey(String secret) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        this.publicKey = rsaUtil.getPublicKey(secret);
+    }
 
     @Autowired
-    public ProjectServiceImpl(ObjectMapper objectMapper,RestTemplate restTemplate,ProjectDAO projectDAO,UserService userService) {
+    public ProjectServiceImpl(ObjectMapper objectMapper,RestTemplate restTemplate,ProjectDAO projectDAO,UserService userService,RSAUtil rsaUtil) {
         this.objectMapper = objectMapper;
         this.restTemplate = restTemplate;
         this.projectDAO = projectDAO;
         this.userService = userService;
+        this.rsaUtil = rsaUtil;
     }
 
-    private void checkProjectMeta(ProjectMetaVO projectMetaVO)
-    {
-
+    private void checkProjectMeta(String url,ProjectMetaVO projectMetaVO) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException {
+        if(!rsaUtil.verify(url,projectMetaVO.getSignature(),publicKey))
+        {
+            throw new SignatureException();
+        }
     }
 
     @Override
     public ProjectDTO createProject(String url) {
+        ProjectMetaVO projectMetaVO = null;
         try {
             URL Url = new URL(new URL(url), "./raw/master/meta.json");
             String str = restTemplate.getForEntity(Url.toURI(), String.class).getBody();
-            ProjectMetaVO projectMetaVO = objectMapper.readValue(str, ProjectMetaVO.class);
-            checkProjectMeta(projectMetaVO);
+            projectMetaVO = objectMapper.readValue(str, ProjectMetaVO.class);
+            checkProjectMeta(url,projectMetaVO);
         }catch (Exception e)
         {
             throw new IllegalProjectException(url,e);
@@ -62,19 +79,21 @@ public class ProjectServiceImpl implements ProjectService {
         ProjectPO projectPO = new ProjectPO();
         projectPO.setUrl(url);
         projectPO.setUserPO(userPO);
+        projectPO.setSlug(projectMetaVO.getSlug());
 
         projectPO = projectDAO.save(projectPO);
 
         ProjectDTO projectDTO = new ProjectDTO();
         projectDTO.setId(projectPO.getId());
         projectDTO.setUrl(projectPO.getUrl());
-
+        projectDTO.setNickname(userDTO.getNickname());
+        projectDTO.setUid(userDTO.getId());
         return projectDTO;
     }
 
     @Override
-    public String getProjectMeta(Long id) {
-        ProjectPO projectPO = projectDAO.findById(id).orElseThrow(()-> new ProjectNotFoundException(id));
+    public String getProjectMeta(String projectSlug) {
+        ProjectPO projectPO = projectDAO.findBySlug(projectSlug).orElseThrow(()-> new ProjectNotFoundException(projectSlug));
         String content = restTemplate.getForEntity(projectPO.getUrl()+"raw/master/meta.json",String.class).getBody();
         return content;
     }
@@ -90,6 +109,8 @@ public class ProjectServiceImpl implements ProjectService {
             projectDTO.setUrl(projectPO.getUrl());
             projectDTO.setId(projectPO.getId());
             projectDTO.setUid(projectPO.getUserPO().getId());
+            projectDTO.setSlug(projectPO.getSlug());
+            projectDTO.setNickname(projectPO.getUserPO().getNickname());
             return projectDTO;
         }).collect(Collectors.toList()));
         projectsDTO.setTotalPages(projects.getTotalPages());
@@ -97,24 +118,29 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public UserDTO getProjectAuthor(Long id) {
-        ProjectPO projectPO = projectDAO.findById(id).orElseThrow(()-> new ProjectNotFoundException(id));
-        UserDTO userDTO = new UserDTO();
-        userDTO.setNickname(projectPO.getUserPO().getNickname());
-        return userDTO;
+    public ProjectDTO getProject(String projectSlug) {
+        ProjectPO projectPO = projectDAO.findBySlug(projectSlug).orElseThrow(()-> new ProjectNotFoundException(projectSlug));
+
+        ProjectDTO projectDTO = new ProjectDTO();
+        projectDTO.setNickname(projectPO.getUserPO().getNickname());
+        projectDTO.setId(projectPO.getId());
+        projectDTO.setUrl(projectPO.getUrl());
+        projectDTO.setUid(projectPO.getUserPO().getId());
+        projectDTO.setSlug(projectPO.getSlug());
+        return projectDTO;
     }
 
     @Override
-    public String getClassMeta(Long id, String slug) {
-        ProjectPO projectPO = projectDAO.findById(id).orElseThrow(()-> new ProjectNotFoundException(id));
-        String content = restTemplate.getForEntity(projectPO.getUrl()+"raw/master/" + slug + "/meta.json",String.class).getBody();
+    public String getClassMeta(String projectSlug,String classSlug) {
+        ProjectPO projectPO = projectDAO.findBySlug(projectSlug).orElseThrow(()-> new ProjectNotFoundException(projectSlug));
+        String content = restTemplate.getForEntity(projectPO.getUrl()+"raw/master/" + classSlug + "/meta.json",String.class).getBody();
         return content;
     }
 
     @Override
-    public String getClassContent(Long id, String slug, String s_slug) {
-        ProjectPO projectPO = projectDAO.findById(id).orElseThrow(()-> new ProjectNotFoundException(id));
-        String content = restTemplate.getForEntity(projectPO.getUrl()+"raw/master/" + slug + "/" +s_slug + ".md",String.class).getBody();
+    public String getClassContent(String projectSlug,String classSlug,String contentSlug) {
+        ProjectPO projectPO = projectDAO.findBySlug(projectSlug).orElseThrow(()-> new ProjectNotFoundException(projectSlug));
+        String content = restTemplate.getForEntity(projectPO.getUrl()+"raw/master/" + classSlug + "/" + contentSlug + ".md",String.class).getBody();
         return content;
     }
 }

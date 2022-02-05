@@ -6,9 +6,9 @@ import com.duplexlearn.model.dto.UserDTO;
 
 public interface ProjectService {
     ProjectDTO createProject(String url);
-    String getProjectMeta(Long id);
+    String getProjectMeta(String projectSlug);
     ProjectsDTO getProjects(int page);
-    UserDTO getProjectAuthor(Long id);
-    String getClassMeta(Long id,String slug);
-    String getClassContent(Long id,String slug,String s_slug);
+    ProjectDTO getProject(String projectSlug);
+    String getClassMeta(String projectSlug,String classSlug);
+    String getClassContent(String projectSlug,String classSlug,String contentSlug);
 }

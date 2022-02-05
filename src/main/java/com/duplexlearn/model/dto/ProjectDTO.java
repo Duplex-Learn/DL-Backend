@@ -6,5 +6,7 @@ import lombok.Data;
 public class ProjectDTO {
     private Long id;
     private String url;
+    private String nickname;
+    private String slug;
     private Long uid;
 }

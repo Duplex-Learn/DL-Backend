@@ -1,8 +1,8 @@
 package com.duplexlearn.exception;
 
 public class ProjectNotFoundException extends RuntimeException{
-    public ProjectNotFoundException(Long id)
+    public ProjectNotFoundException(String slug)
     {
-        super("Project Not Found " + id);
+        super("Project Not Found " + slug);
     }
 }

@@ -2,18 +2,14 @@ package com.duplexlearn.controller;
 
 import com.duplexlearn.model.dto.ProjectDTO;
 import com.duplexlearn.model.dto.ProjectsDTO;
-import com.duplexlearn.model.po.ProjectPO;
-import com.duplexlearn.model.vo.AuthorVO;
 import com.duplexlearn.model.vo.ProjectCreateVO;
 import com.duplexlearn.model.vo.ProjectVO;
 import com.duplexlearn.model.vo.ProjectsVO;
 import com.duplexlearn.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -31,23 +27,30 @@ public class ProjectController {
     {
         ProjectDTO projectDTO = projectService.createProject(projectVerifyVO.getGit());
         ProjectVO projectVO = new ProjectVO();
-        projectVO.setUrl(projectDTO.getUrl());
+        projectVO.setNickname(projectDTO.getNickname());
+        projectVO.setUid(projectDTO.getUid());
         projectVO.setId(projectDTO.getId());
+        projectVO.setUrl(projectDTO.getUrl());
         return projectVO;
     }
 
-    @GetMapping("/project/{id}/meta")
-    public String getProjectMeta(@PathVariable("id") Long id)
+    @GetMapping("/project/{slug}/meta")
+    public String getProjectMeta(@PathVariable("slug") String projectSlug)
     {
-        return projectService.getProjectMeta(id);
+        return projectService.getProjectMeta(projectSlug);
     }
 
-    @GetMapping("/project/{id}/author")
-    public AuthorVO getProjectAuthor(@PathVariable("id") Long id)
+    @GetMapping("/project/{slug}/")
+    public ProjectVO getProject(@PathVariable("slug") String projectSlug)
     {
-        AuthorVO authorVO = new AuthorVO();
-        authorVO.setNickname(projectService.getProjectAuthor(id).getNickname());
-        return authorVO;
+        ProjectDTO projectDTO = projectService.getProject(projectSlug);
+        ProjectVO projectVO = new ProjectVO();
+        projectVO.setNickname(projectDTO.getNickname());
+        projectVO.setUid(projectDTO.getUid());
+        projectVO.setId(projectDTO.getId());
+        projectVO.setUrl(projectDTO.getUrl());
+        projectVO.setSlug(projectDTO.getSlug());
+        return projectVO;
     }
 
     @GetMapping("/projects/{page}")
@@ -61,23 +64,25 @@ public class ProjectController {
             projectVO.setId(projectDTO.getId());
             projectVO.setUrl(projectDTO.getUrl());
             projectVO.setUid(projectDTO.getUid());
+            projectVO.setSlug(projectDTO.getSlug());
+            projectVO.setNickname(projectDTO.getNickname());
             return projectVO;
         }).collect(Collectors.toList()));
 
         return projectsVO;
     }
 
-    @GetMapping("/project/{id}/classes/{slug}")
-    public String getClassMeta(@PathVariable("id") Long id,@PathVariable("slug") String slug)
+    @GetMapping("/project/{p_slug}/classes/{c_slug}")
+    public String getClassMeta(@PathVariable("p_slug") String projectSlug,@PathVariable("c_slug") String classSlug)
     {
-        return projectService.getClassMeta(id,slug);
+        return projectService.getClassMeta(projectSlug,classSlug);
     }
 
-    @GetMapping("/project/{id}/classes/{slug}/steps/{s_slug}")
-    public String getClassContent(@PathVariable("id") Long id,
-                                  @PathVariable("slug") String slug,
-                                  @PathVariable("s_slug") String s_slug)
+    @GetMapping("/project/{p_slug}/classes/{c_slug}/steps/{s_slug}")
+    public String getClassContent(@PathVariable("p_slug") String projectSlug,
+                                  @PathVariable("c_slug") String classSlug,
+                                  @PathVariable("s_slug") String stepSlug)
     {
-        return projectService.getClassContent(id,slug,s_slug);
+        return projectService.getClassContent(projectSlug,classSlug,stepSlug);
     }
 }
